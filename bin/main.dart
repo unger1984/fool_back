@@ -1,19 +1,21 @@
 // ignore_for_file: prefer-static-class
 
+import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:fool_back/domain/datasources/config_source.dart';
+import 'package:fool_back/domain/datasources/pubsub_source.dart';
 import 'package:fool_back/server.dart';
 import 'package:fool_back/utils/logging.dart';
 import 'package:fool_back/utils/service_locator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hotreloader/hotreloader.dart';
+import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 
 Future<void> main(List<String> arguments) async {
-  // final info = (await Service.getInfo()).serverUri;
-  // print(info);
   final parser = ArgParser()
     ..addOption('cluster', abbr: 'c', defaultsTo: '1')
     ..addFlag('production');
@@ -23,12 +25,16 @@ Future<void> main(List<String> arguments) async {
   final config = GetIt.I<ConfigSource>();
   Logging.setupLogging(isDebug: config.debug);
 
-  // подключение к БД
-  // final conn = GetIt.I<DBSource>();
+  // Проверим подключение Redis
+  try {
+    await GetIt.I<PubSubSource>().test();
+  } catch (_) {
+    exit(0);
+  }
 
-  // запуск миграций
-  // final migration = Migrate(conn);
-  // await migration.up();
+  Timer.periodic(Duration(seconds: 1), (timer) {
+    unawaited(GetIt.I<PubSubSource>().send("test", '${DateFormat('ss').format(DateTime.now())}'));
+  });
 
   // парсим аргументы
   int cluster = int.parse(args['cluster']);
@@ -42,10 +48,7 @@ Future<void> main(List<String> arguments) async {
   // ignore: move-variable-closer-to-its-usage
   List<Isolate> res = await Future.wait<Isolate>(isolates);
 
-  // reloader.stop();
-
   if (config.debug) {
-    HotReloader.logLevel = Level.OFF;
     await HotReloader.create(
       onAfterReload: (ctx) => () async {
         for (Isolate iso in res) {
@@ -69,10 +72,10 @@ void errorHandler(List<dynamic> pair) {
   Logger('IOERROR').shout(isolateError);
 }
 
-Future<Isolate> createIsolate(int num) {
+Future<Isolate> createIsolate(int numInstance) {
   return Isolate.spawn(
     Server.run,
-    [num],
+    [numInstance],
     onError: RawReceivePort(errorHandler).sendPort,
   );
 }

@@ -17,28 +17,37 @@ class ConfigSourceEnv extends ConfigSource {
   late bool _dbdebug;
   late bool _debug;
   late String? _secret;
+  late String _redisHost;
+  late int _redisPort;
+
   static const _defaultHOST = 'localhost';
   static const _defaultPORT = 8084;
   static const _defaultDBHOST = 'localhost';
   static const _defaultDBPORT = 5432;
   static const _defaultUPLOADPATH = './upload/';
+  static const _defaultRdisHost = 'localhost';
+  static const _defaultRdisPort = 6379;
 
   ConfigSourceEnv() {
     final env = DotEnv()..load();
-    final dbportDef = env.isEveryDefined(['DB_PORT']);
     _host = env.isEveryDefined(['HOST']) ? env['HOST'] ?? '' : _defaultHOST;
-    _port = dbportDef ? int.tryParse(env['port'] ?? '') ?? _defaultPORT : _defaultPORT;
+    final portDef = env.isEveryDefined(['PORT']);
+    _port = portDef ? int.tryParse(env['PORT'] ?? '') ?? _defaultPORT : _defaultPORT;
     _dbname = env['DB_NAME'] ?? 'test';
     _dbuser = env['DB_USER'];
     _dbpassword = env['DB_PASS'];
     _dbhost = env.isEveryDefined(['DB_HOST']) ? env['DB_HOST'] ?? '' : _defaultDBHOST;
-    _dbport = dbportDef ? int.tryParse(env['DB_PORT'] ?? '') ?? _defaultDBPORT : _defaultDBPORT;
+    final dbPortDef = env.isEveryDefined(['DB_PORT']);
+    _dbport = dbPortDef ? int.tryParse(env['DB_PORT'] ?? '') ?? _defaultDBPORT : _defaultDBPORT;
     _dbdebug = env.isEveryDefined(['DB_DEBUG']) && env['DB_DEBUG']?.toLowerCase() == 'true';
     _debug = env.isEveryDefined(['DEBUG']) && env['DEBUG']?.toLowerCase() == 'true';
     _uploadpath = env.isEveryDefined(['UPLOAD_PATH'])
         ? Directory(env['UPLOAD_PATH'] ?? '')
         : Directory('${Directory.current.path}$_defaultUPLOADPATH');
     _secret = env['SECRET'];
+    _redisHost = env.isEveryDefined(['REDIS_HOST']) ? env['REDIS_HOST'] ?? '' : _defaultRdisHost;
+    final redisPortDef = env.isEveryDefined(['REDIS_PORT']);
+    _redisPort = redisPortDef ? int.tryParse(env['REDIS_PORT'] ?? '') ?? _defaultRdisPort : _defaultRdisPort;
   }
 
   @override
@@ -51,6 +60,8 @@ class ConfigSourceEnv extends ConfigSource {
       'dbport': dbport,
       'dbuser': dbuser,
       'debug': debug,
+      'redisHost': redisHost,
+      'redisPort': redisPort,
       'secret': secret,
       'uploadpath': uploadpath,
     };
@@ -88,4 +99,10 @@ class ConfigSourceEnv extends ConfigSource {
 
   @override
   String? get secret => _secret;
+
+  @override
+  String get redisHost => _redisHost;
+
+  @override
+  int get redisPort => _redisPort;
 }

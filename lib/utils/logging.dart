@@ -14,7 +14,7 @@ class Logging {
   }
 
   static void setupLogging({bool isDebug = false}) {
-    hierarchicalLoggingEnabled = true;
+    // hierarchicalLoggingEnabled = true;
 
     Logger.root.level = isDebug ? Level.ALL : Level.INFO;
     Logger.root.onRecord.listen((record) {

@@ -12,6 +12,8 @@ abstract class ConfigSource {
   Directory get uploadpath;
   bool get dbdebug;
   bool get debug;
+  String get redisHost;
+  int get redisPort;
 
   Map<String, dynamic> toJson();
 }

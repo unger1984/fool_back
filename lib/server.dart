@@ -4,6 +4,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fool_back/domain/datasources/config_source.dart';
+import 'package:fool_back/domain/datasources/pubsub_source.dart';
+import 'package:fool_back/presentation/middlewares/logger_middleware.dart';
 import 'package:fool_back/utils/logging.dart';
 import 'package:fool_back/utils/service_locator.dart';
 import 'package:get_it/get_it.dart';
@@ -32,7 +34,7 @@ class Server {
     //   app.mount('/upload/', createStaticHandler(config.uploadpath.path));
     // }
     // app.mount('/api', api.router);
-    // app.use(loggerMiddleware(instanceNum));
+    app.use(loggerMiddleware(instanceNum));
 
     app.get('/ws', () => _wsHandler);
 
@@ -54,6 +56,10 @@ class Server {
       serverContext.useCertificateChainBytes(await File(certificateChain).readAsBytes());
       serverContext.usePrivateKey(serverKey);
     }
+
+    GetIt.I<PubSubSource>().subscribe("test", (event) {
+      _logger.fine('[$instanceNum] $event');
+    });
 
     unawaited(shelfRun(
       () => _init(instanceNum),
