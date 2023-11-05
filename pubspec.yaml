@@ -1,0 +1,34 @@
+name: fool_back
+description: Backend for game Fool.
+version: 1.0.0
+publish_to: none
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.1.5
+
+# Add regular dependencies here.
+dependencies:
+  args: ^2.4.2
+  colorize: ^3.0.0
+  freezed_annotation: ^2.4.1
+  dotenv: ^4.2.0
+  get_it: ^7.6.4
+  hotreloader: ^4.1.0
+  intl: ^0.18.1
+  json_annotation: ^4.8.1
+  logging: ^1.2.0
+  shelf: ^1.4.1
+  shelf_plus: ^1.7.0
+  uuid: ^4.1.0
+
+dev_dependencies:
+  dart_code_metrics_presets: ^2.5.0
+  freezed: ^2.4.5
+  husky: ^0.1.6
+  json_serializable: ^6.7.1
+  lints: ^3.0.0
+
+# ignore: avoid-dependency-overrides
+dependency_overrides:
+  hotreloader: ^4.1.0

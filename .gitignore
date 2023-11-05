@@ -1,0 +1,22 @@
+# Files and directories created by pub
+.dart_tool/
+.packages
+
+# Conventional directory for build outputs
+build/
+
+# Directory created by dartdoc
+doc/api/
+upload/
+*.iml
+.idea/
+.DS_Store
+
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+lib/generated/
+
+~$*.*
+.env
+pubspec.lock
