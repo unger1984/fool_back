@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:fool_back/data/datasources/config_source_env.dart';
 import 'package:fool_back/data/datasources/pubsub_source_redis.dart';
+import 'package:fool_back/data/services/session_service_ws.dart';
 import 'package:fool_back/domain/datasources/config_source.dart';
 import 'package:fool_back/domain/datasources/pubsub_source.dart';
+import 'package:fool_back/domain/services/session_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -28,5 +30,8 @@ class ServiceLocator {
     // Sources
     GetIt.I.registerSingleton<ConfigSource>(configSource);
     GetIt.I.registerSingleton<PubSubSource>(redisSource);
+
+    // Services
+    GetIt.I.registerSingleton<SessionService>(SessionServiceWs());
   }
 }

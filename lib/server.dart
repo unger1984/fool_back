@@ -4,7 +4,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fool_back/domain/datasources/config_source.dart';
-import 'package:fool_back/domain/datasources/pubsub_source.dart';
+import 'package:fool_back/domain/entitities/client_session.dart';
+import 'package:fool_back/domain/services/session_service.dart';
 import 'package:fool_back/presentation/middlewares/logger_middleware.dart';
 import 'package:fool_back/utils/logging.dart';
 import 'package:fool_back/utils/service_locator.dart';
@@ -17,25 +18,29 @@ class Server {
   static const serverKey = 'cert/key.pem';
   static const certificateChain = 'cert/chain.pem';
 
-  static WebSocketSession get _wsHandler => WebSocketSession(
-        onOpen: (ws) {
-          _logger.fine(ws);
-        },
-        onClose: (ws) {
-          _logger.fine(ws);
-        },
-      );
+  static WebSocketSession get _wsHandler {
+    final _sessionService = GetIt.I<SessionService>();
+    // Определяется при подключении.
+    // ignore: avoid-late-keyword
+    late ClientSession client;
+
+    return WebSocketSession(
+      onOpen: (ws) {
+        client = _sessionService.addClient(ws);
+      },
+      onClose: (ws) {
+        _sessionService.disconnectClient(client.uuid);
+      },
+      onMessage: (ws, message) {
+        _logger.fine(client.uuid, message);
+        _sessionService.send(client.uuid, "OK");
+      },
+    );
+  }
 
   static Handler _init(int instanceNum) {
     final app = Router().plus;
-    // final api = ApiRouter(instanceNum);
-
-    // if (config.debug) {
-    //   app.mount('/upload/', createStaticHandler(config.uploadpath.path));
-    // }
-    // app.mount('/api', api.router);
     app.use(loggerMiddleware(instanceNum));
-
     app.get('/ws', () => _wsHandler);
 
     return app.call;
@@ -56,10 +61,6 @@ class Server {
       serverContext.useCertificateChainBytes(await File(certificateChain).readAsBytes());
       serverContext.usePrivateKey(serverKey);
     }
-
-    GetIt.I<PubSubSource>().subscribe("test", (event) {
-      _logger.fine('[$instanceNum] $event');
-    });
 
     unawaited(shelfRun(
       () => _init(instanceNum),

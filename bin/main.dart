@@ -12,7 +12,6 @@ import 'package:fool_back/utils/logging.dart';
 import 'package:fool_back/utils/service_locator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hotreloader/hotreloader.dart';
-import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 
 Future<void> main(List<String> arguments) async {
@@ -31,10 +30,6 @@ Future<void> main(List<String> arguments) async {
   } catch (_) {
     exit(0);
   }
-
-  Timer.periodic(Duration(seconds: 1), (timer) {
-    unawaited(GetIt.I<PubSubSource>().send("test", '${DateFormat('ss').format(DateTime.now())}'));
-  });
 
   // парсим аргументы
   int cluster = int.parse(args['cluster']);
