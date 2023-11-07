@@ -1,12 +1,10 @@
 // ignore_for_file: prefer-static-class
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:fool_back/domain/datasources/config_source.dart';
-import 'package:fool_back/domain/datasources/pubsub_source.dart';
 import 'package:fool_back/server.dart';
 import 'package:fool_back/utils/logging.dart';
 import 'package:fool_back/utils/service_locator.dart';
@@ -15,24 +13,15 @@ import 'package:hotreloader/hotreloader.dart';
 import 'package:logging/logging.dart';
 
 Future<void> main(List<String> arguments) async {
-  final parser = ArgParser()
-    ..addOption('cluster', abbr: 'c', defaultsTo: '1')
-    ..addFlag('production');
+  final parser = ArgParser()..addFlag('production');
   final args = parser.parse(arguments);
 
   await ServiceLocator.setupGetIt();
   final config = GetIt.I<ConfigSource>();
   Logging.setupLogging(isDebug: config.debug);
 
-  // Проверим подключение Redis
-  try {
-    await GetIt.I<PubSubSource>().test();
-  } catch (_) {
-    exit(0);
-  }
-
   // парсим аргументы
-  int cluster = int.parse(args['cluster']);
+  int cluster = 1;
 
   // запускаем заданное число изолятов
   List<Future<Isolate>> isolates = <Future<Isolate>>[];

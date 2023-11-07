@@ -48,6 +48,7 @@ dart_code_metrics:
     - parameters-ordering: false
     - prefer-correct-switch-length:
         min-length: 2
+        max-length: 20
     - prefer-match-file-name: false
     - prefer-moving-to-variable:
         allowed-duplicated-chains: 5

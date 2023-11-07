@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fool_back/domain/datasources/config_source.dart';
-import 'package:fool_back/domain/entitities/client_session.dart';
 import 'package:fool_back/domain/services/session_service.dart';
 import 'package:fool_back/presentation/middlewares/logger_middleware.dart';
 import 'package:fool_back/utils/logging.dart';
@@ -18,30 +17,12 @@ class Server {
   static const serverKey = 'cert/key.pem';
   static const certificateChain = 'cert/chain.pem';
 
-  static WebSocketSession get _wsHandler {
-    final _sessionService = GetIt.I<SessionService>();
-    // Определяется при подключении.
-    // ignore: avoid-late-keyword
-    late ClientSession client;
-
-    return WebSocketSession(
-      onOpen: (ws) {
-        client = _sessionService.addClient(ws);
-      },
-      onClose: (ws) {
-        _sessionService.disconnectClient(client.uuid);
-      },
-      onMessage: (ws, message) {
-        _logger.fine(client.uuid, message);
-        _sessionService.send(client.uuid, "OK");
-      },
-    );
-  }
-
   static Handler _init(int instanceNum) {
+    final sessionService = GetIt.I<SessionService>();
+
     final app = Router().plus;
     app.use(loggerMiddleware(instanceNum));
-    app.get('/ws', () => _wsHandler);
+    app.get('/ws', () => sessionService.addClient());
 
     return app.call;
   }
@@ -67,7 +48,7 @@ class Server {
       defaultBindAddress: config.host,
       defaultBindPort: config.port,
       securityContext: serverContext,
-      defaultShared: true,
+      // defaultShared: true,
     ));
 
     _logger.info(
